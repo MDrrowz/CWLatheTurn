@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34322.80
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CWLatheTurn", "CWLatheTurn.csproj", "{AB26536E-498D-4231-8944-9A6F88B05ECC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB26536E-498D-4231-8944-9A6F88B05ECC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB26536E-498D-4231-8944-9A6F88B05ECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB26536E-498D-4231-8944-9A6F88B05ECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB26536E-498D-4231-8944-9A6F88B05ECC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0DB25FC8-C4C1-4AAD-9F79-56C0D67AEAA8}
+	EndGlobalSection
+EndGlobal
