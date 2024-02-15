@@ -15,9 +15,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using static CWLatheTurn.Form1;
 using System.Reflection;
+using System.Xml.Linq;
 
-namespace CWLatheTurn
-{
+namespace CWLatheTurn{
     
 
     public partial class Form1 : Form
@@ -26,15 +26,22 @@ namespace CWLatheTurn
         {
             InitializeComponent();
             InitDGV1();
-
-            //outputTB1Print(savedInfo, dt);
-
-        }
-        
+        }        
 
         //DATA
         DataTable dt = new DataTable();
         DataTable st = new DataTable();
+
+        public static class Delims
+        {
+            public const string infoData = "`||`";
+            public const string type = "#:";
+            public const string propVal = ",*";
+            public const string measInfo = ";~";
+            public const string start = "~{";
+            public const string end = "}~";
+        }
+
 
         JobInfo savedInfo = new JobInfo
         {
@@ -66,13 +73,13 @@ namespace CWLatheTurn
             outputTB1.Text = SaveDataSerialize(savedInfo, dt);
         }
 
-        string SaveDataSerialize (JobInfo ji, DataTable mt)
+        string SaveDataSerialize (JobInfo ji, DataTable mt) //serializes Job Info and Datatable and returns string
         {
             StringBuilder outString = new StringBuilder();
-            return outString.Append($"{JobInfoToString(ji)} | {MeasTableToString(mt)}").ToString();
+            return outString.Append($"{JobInfoToString(ji)} {Delims.splitInfoData} {MeasTableToString(mt)}").ToString();
         }
 
-        string JobInfoToString (JobInfo info) //woooo it fucking works
+        string JobInfoToString (JobInfo info) //Serializes Job Info data and returns string
         {
             PropertyInfo[] props = typeof(JobInfo).GetProperties();
             StringBuilder sb = new StringBuilder();
@@ -84,8 +91,8 @@ namespace CWLatheTurn
                 int numItems = props.Count();
                 foreach (PropertyInfo prop in props)
                 {
-                    sb.Append($"{prop.Name}, {prop.GetValue(info)}");
-                    if (iter < numItems) sb.Append("; ");
+                    sb.Append($"{prop.Name}{Delims.splitPropVal} {prop.GetValue(info)}");
+                    if (iter < numItems) sb.Append($"{Delims.splitMeasInfo} ");
                     iter++;
                 }                
             }
@@ -97,7 +104,7 @@ namespace CWLatheTurn
             return sb.ToString();
         }     
         
-        string MeasTableToString (DataTable dt)
+        string MeasTableToString (DataTable dt) //Serializes measurement datatable info and returns string 
         {
             StringBuilder sb = new StringBuilder("Measurements:{");
 
@@ -114,12 +121,12 @@ namespace CWLatheTurn
             return sb.ToString();
         }
 
-        void StringToMeasTable (string saveStr)
+        void StringToMeasTable (string saveStr) //Takes serialized saveinfo string and inputs measurement info in datatable
         {
-            string str = string.Empty;
-            dt.Rows.Clear();
+            //string str = string.Empty; //clears string
+            dt.Rows.Clear(); //clears datatable
             outputTB1.Clear();
-            outputTB1.Text = saveStr; 
+            outputTB1.Text = $"{saveStr}"; //outputs saveStr to TB
             outputTB1.AppendText(Environment.NewLine);
 
             string[] subStr1 = saveStr.Split('|')[1].Split(':')[1].Split('{', '}')[1].Split(';');
@@ -136,20 +143,48 @@ namespace CWLatheTurn
             DGV1reload();
         }
 
+        void StringToJobInfo (string saveStr)
+        {
+            string[] subStr1 = saveStr.Split('|')[0] //looks at substring before "|"
+                .Split(':')[1] //looks at substring after ":"
+                .Split('{', '}')[1] //looks at substring after "{"
+                .Split(';'); //stores substrings split by ";" into array
+
+            int i = 1;
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Environment.NewLine);
+
+            foreach (string subStr2 in subStr1)
+            {
+                string propName = subStr2.Split(',')[0].Trim();
+                string propValue = subStr2.Split(',')[1].Trim();
+
+                PropertyInfo propertyInfo = typeof(JobInfo).GetProperty(propName);
+                if (propertyInfo != null && propertyInfo.PropertyType == typeof(string))
+                {
+                    // Set the value of the property using reflection
+                    propertyInfo.SetValue(savedInfo, propValue);
+                    sb.Append($"Value '{propValue}' stored in property '{propName}'.{Environment.NewLine}");
+                }
+            }
+            
+            outputTB1.AppendText($"\n{sb.ToString()}\n{JobInfoToString(savedInfo)}");
+        }
+
 
         //SAVE/LOAD FILE
         public void LoadFile() //unfinished
         {
-                if (true) //allow load conditions here
+                if (true) //ADD LOAD CONDITIONS HERE (SET TO TRUE FOR DEBUG)
                 {
                 st.Clear(); //clears storage datatable
                 st = dt; //save measurement datatable to storage datatable
-                //dt.Clear();  //UNCOMMENT WHEN LOAD IS IMPLIMENTED
+                //dt.Clear();  //UNCOMMENT WHEN LOAD IS IMPLEMENTED
 
                 Stream openStream = null;
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Title = "Load Job File";
-                openFileDialog.Filter = "JSON files|*.json";
+                openFileDialog.Filter = "Counter-Weight Lathe Turn files|*.cwlt";
                 openFileDialog.InitialDirectory = @"C:\Users\machine shop\source\repos\CWLatheTurn\SaveLoad Files"; //functionality confirmed
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -160,11 +195,8 @@ namespace CWLatheTurn
                             using (openStream)
                             {
                                 StreamReader sr = new StreamReader(openStream);
-                                string json = sr.ReadToEnd();
+                                string cwlt = sr.ReadToEnd();
                                 sr.Close();
-                                
-
-
                                 DGV1reload(); //reload datatable to datagridview1
                             }
                         }
@@ -178,22 +210,13 @@ namespace CWLatheTurn
             }
         }
 
-        //public void ReadSaveFile (string json)
-        //{
-        //    try
-        //    {
-        //        string jobInfo;
-        //        string dataInfo;
+        public void LoadData(string str)
+        {
+            StringToMeasTable(str);
+            StringToJobInfo(str);            
+        }
 
-
-        //    }
-        //    catch
-        //    { 
-            
-        //    }
-        //}
-
-        public void SaveFile() //Saves JSON file of datatable
+        public void SaveFile() //Saves CWLT file of datatable
         {
             try
             {
@@ -202,9 +225,9 @@ namespace CWLatheTurn
                     System.Windows.Forms.SaveFileDialog saveDia1;
                     saveDia1 = new System.Windows.Forms.SaveFileDialog();
 
-                    saveDia1.Filter = "JSON Files (*.json)|*.json"; //sets file type
+                    saveDia1.Filter = "CWLT Files (*.cwlt)|*.cwlt"; //sets file type //CHANGE TO MDLATHECALC FILENAME
                     saveDia1.Title = "Save Job File"; //form title
-                    //saveDia1.DefaultExt = "json"; //sets extension
+                    saveDia1.DefaultExt = "cwlt"; //sets extension
                     saveDia1.InitialDirectory = defaultPath; //sets initial directory
                     saveDia1.FileName = defaultFileName; //sets file name to saveas
 
@@ -215,13 +238,12 @@ namespace CWLatheTurn
                         string path = Path.GetFullPath(saveDia1.FileName); //saves file save path/name to string
                         string saveStr = string.Empty;
 
-                        //saveStr += $"{JobInfoToString(jobInfo)}\n"; //adds jobInfo to save string
-                        //saveStr += $"{DataTableToString(dt)}"; //adds converted data table to string
 
-                        outputTB1.Text = $@"{path}: {saveStr}"; //outputs JSON string in textbox for debug
-                        File.WriteAllText($@"{path}", saveStr);  //saves string to JSON file                        
 
-                        string readJSON = File.ReadAllText($@"{path}");
+                        outputTB1.Text = $@"{path}: {saveStr}"; //outputs CWLT string in textbox for debug
+                        File.WriteAllText($@"{path}", saveStr);  //saves string to CWLT file                        
+
+                        string readSavefile = File.ReadAllText($@"{path}");
                     }
                 }
             }
@@ -292,7 +314,7 @@ namespace CWLatheTurn
             string valTxt = textBox1.Text.Trim();
 
             int rowIndex;
-            if (!(ValidateMeasInput())) //exits method if inputs are not valid
+            if (!ValidateMeasInput()) //exits method if inputs are not valid
             {
                 return;
             }
@@ -474,18 +496,18 @@ namespace CWLatheTurn
 
 
         //FORM DESIGNER GENERATED CODE
-        private void addButton1_Click(object sender, EventArgs e)
+        private void AddButton1_Click(object sender, EventArgs e)
         {
             AddMeas();
             //AngleTextBox1.Select();
         }
 
-        private void modButton2_Click(object sender, EventArgs e)
+        private void ModButton2_Click(object sender, EventArgs e)
         {
             ModMeas();
         }
 
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        private void TextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
             {
@@ -504,13 +526,10 @@ namespace CWLatheTurn
             LoadFile();
         }
 
-        private void remButton3_Click(object sender, EventArgs e)
+        private void RemButton3_Click(object sender, EventArgs e) //currently debug button
         {
-            //outputTB1Print();
-            //outputTB1.AppendText(Environment.NewLine);
-            //outputTB1.AppendText($"Num values in dt: {(dt.Rows.Count * 2).ToString()}");
-            string str = "JobInfo:{WO, 12345; Name, Sick Nancheth; Engine, LS3; CrankMfg, OE; Date, 11/3/2020 12:00:00 AM; ImbaRad, 3.25; ImbaAng, 0; ImbaMass, 0} | Measurements:{0,1;2,3;4,5}";
-            StringToMeasTable(str);
+            string str = "JobInfo:{WO, 12345; Name, Nick Sancheth; Engine, LS9; CrankMfg, Callies; Date, 11/3/2020 12:00:00 AM; ImbaRad, 3.25; ImbaAng, 0; ImbaMass, 0} | Measurements:{0,1;2,3;4,5}";
+            LoadData(str);
         }
     }
 }

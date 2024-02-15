@@ -194,7 +194,7 @@ namespace CWLatheTurn
             this.remButton3.TabIndex = 6;
             this.remButton3.Text = "Remove";
             this.remButton3.UseVisualStyleBackColor = true;
-            this.remButton3.Click += new System.EventHandler(this.remButton3_Click);
+            this.remButton3.Click += new System.EventHandler(this.RemButton3_Click);
             // 
             // modButton2
             // 
@@ -204,7 +204,7 @@ namespace CWLatheTurn
             this.modButton2.TabIndex = 5;
             this.modButton2.Text = "Modify";
             this.modButton2.UseVisualStyleBackColor = true;
-            this.modButton2.Click += new System.EventHandler(this.modButton2_Click);
+            this.modButton2.Click += new System.EventHandler(this.ModButton2_Click);
             // 
             // addButton1
             // 
@@ -214,7 +214,7 @@ namespace CWLatheTurn
             this.addButton1.TabIndex = 4;
             this.addButton1.Text = "Add";
             this.addButton1.UseVisualStyleBackColor = true;
-            this.addButton1.Click += new System.EventHandler(this.addButton1_Click);
+            this.addButton1.Click += new System.EventHandler(this.AddButton1_Click);
             // 
             // label2
             // 
@@ -247,7 +247,7 @@ namespace CWLatheTurn
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
             this.textBox1.TabIndex = 2;
-            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
+            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TextBox1_KeyPress);
             // 
             // dataGridView1
             // 
