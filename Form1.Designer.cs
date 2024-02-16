@@ -125,6 +125,7 @@ namespace CWLatheTurn
             this.outputTB1.Location = new System.Drawing.Point(333, 12);
             this.outputTB1.Multiline = true;
             this.outputTB1.Name = "outputTB1";
+            this.outputTB1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.outputTB1.Size = new System.Drawing.Size(317, 110);
             this.outputTB1.TabIndex = 9;
             // 

@@ -9,13 +9,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Text.Json;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using static CWLatheTurn.Form1;
 using System.Reflection;
 using System.Xml.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace CWLatheTurn{
     
@@ -37,9 +38,9 @@ namespace CWLatheTurn{
             public const string infoData = "`||`";
             public const string type = "#:";
             public const string propVal = ",*";
-            public const string measInfo = ";~";
-            public const string start = "~{";
-            public const string end = "}~";
+            public const string measInfo = ";`";
+            public const string start = "^{";
+            public const string end = "}^";
         }
 
 
@@ -76,23 +77,22 @@ namespace CWLatheTurn{
         string SaveDataSerialize (JobInfo ji, DataTable mt) //serializes Job Info and Datatable and returns string
         {
             StringBuilder outString = new StringBuilder();
-            return outString.Append($"{JobInfoToString(ji)} {Delims.splitInfoData} {MeasTableToString(mt)}").ToString();
+            return outString.Append($"{JobInfoToString(ji)}{Delims.infoData}{MeasTableToString(mt)}").ToString();
         }
 
         string JobInfoToString (JobInfo info) //Serializes Job Info data and returns string
         {
             PropertyInfo[] props = typeof(JobInfo).GetProperties();
             StringBuilder sb = new StringBuilder();
-            sb.Append("JobInfo:{");
+            sb.Append($"JobInfo{Delims.type}{Delims.start}");
             try
             {
                 string str = String.Empty;
                 int iter = 1;
-                int numItems = props.Count();
                 foreach (PropertyInfo prop in props)
                 {
-                    sb.Append($"{prop.Name}{Delims.splitPropVal} {prop.GetValue(info)}");
-                    if (iter < numItems) sb.Append($"{Delims.splitMeasInfo} ");
+                    sb.Append($"{prop.Name}{Delims.propVal}{prop.GetValue(info)}");
+                    if (iter < props.Count()) sb.Append($"{Delims.measInfo}");
                     iter++;
                 }                
             }
@@ -100,44 +100,58 @@ namespace CWLatheTurn{
             {
                 sb.Append("Datatable is NULL");
             }
-            sb.Append('}');
+            sb.Append($"{Delims.end}");
             return sb.ToString();
         }     
         
         string MeasTableToString (DataTable dt) //Serializes measurement datatable info and returns string 
         {
-            StringBuilder sb = new StringBuilder("Measurements:{");
+
+
+            StringBuilder sb = new StringBuilder($"Measurements{Delims.type}{Delims.start}");
 
             if (dt != null)
             {
                 int iter = 1;
                 foreach (DataRow row in dt.Rows)
                 {
-                    sb.Append($"{row[1]},{row[2]}");
-                    if (iter < dt.Rows.Count * 2) sb.Append(';');
+                    sb.Append($"{row[1]}{Delims.propVal}{row[2]}");
+                    if (iter < dt.Rows.Count) sb.Append($"{Delims.measInfo}");
+                    iter++;
                 }
             }
-            sb.Append("}");
+            sb.Append($"{Delims.end}");
             return sb.ToString();
         }
 
-        void StringToMeasTable (string saveStr) //Takes serialized saveinfo string and inputs measurement info in datatable
+        void StringToMeasTable(string saveStr) //[WORKS]Takes serialized saveinfo string and inputs measurement info in datatable
         {
-            //string str = string.Empty; //clears string
             dt.Rows.Clear(); //clears datatable
             outputTB1.Clear();
-            outputTB1.Text = $"{saveStr}"; //outputs saveStr to TB
-            outputTB1.AppendText(Environment.NewLine);
 
-            string[] subStr1 = saveStr.Split('|')[1].Split(':')[1].Split('{', '}')[1].Split(';');
+            string[] dID = { Delims.infoData };
+            string[] dType = { Delims.type };
+            string[] dPV = {  Delims.propVal };
+            string[] dMI = { Delims.measInfo };
+            string[] dS = { Delims.start };
+            string[] dE = { Delims.end };
+            string[] subStr1 = saveStr.Split(dID, StringSplitOptions.None)[1]
+                .Split(dType, StringSplitOptions.None)[1]
+                .Split(dS, StringSplitOptions.None)[1]
+                .Split(dE, StringSplitOptions.None)[0]
+                .Split(dMI, StringSplitOptions.None);
+
             int i = 1;
 
             foreach (string subStr2 in subStr1)
             {
-                string[] meas = subStr2.Split(',');
+                outputTB1.Text += $"subStr2: {subStr2}{Environment.NewLine}";
+            }
+
+            foreach (string subStr2 in subStr1)
+            {
+                string[] meas = subStr2.Split(dPV, StringSplitOptions.None);
                 dt.Rows.Add(i, meas[0], meas[1]);
-                outputTB1.Text += $"{i}: {{{meas[0]}, {meas[1]}}}";
-                if (i < subStr1.Count()) outputTB1.Text += "; ";
                 i++;
             }
             DGV1reload();
@@ -145,30 +159,46 @@ namespace CWLatheTurn{
 
         void StringToJobInfo (string saveStr)
         {
-            string[] subStr1 = saveStr.Split('|')[0] //looks at substring before "|"
-                .Split(':')[1] //looks at substring after ":"
-                .Split('{', '}')[1] //looks at substring after "{"
-                .Split(';'); //stores substrings split by ";" into array
+            string[] dID = { Delims.infoData };
+            string[] dType = { Delims.type };
+            string[] dPV = { Delims.propVal };
+            string[] dMI = { Delims.measInfo };
+            string[] dS = { Delims.start };
+            string[] dE = { Delims.end };
+
+            string[] subStr1 = saveStr.Split(dID, StringSplitOptions.None)[0]
+                .Split(dType, StringSplitOptions.None)[1]
+                .Split(dS, StringSplitOptions.None)[1]
+                .Split(dE, StringSplitOptions.None)[0]
+                .Split(dMI, StringSplitOptions.None);
 
             int i = 1;
             StringBuilder sb = new StringBuilder();
             sb.Append(Environment.NewLine);
+            outputTB1.Text = $"subStr1.count = {subStr1.Length}";
 
             foreach (string subStr2 in subStr1)
             {
-                string propName = subStr2.Split(',')[0].Trim();
-                string propValue = subStr2.Split(',')[1].Trim();
+                string propName = subStr2.Split(dPV, StringSplitOptions.None)[0].Trim();
+                string propValue = subStr2.Split(dPV, StringSplitOptions.None)[1].Trim();
+                DateTime dateTime;
 
                 PropertyInfo propertyInfo = typeof(JobInfo).GetProperty(propName);
                 if (propertyInfo != null && propertyInfo.PropertyType == typeof(string))
                 {
-                    // Set the value of the property using reflection
+                    // Set the value of the property using reflection                    
                     propertyInfo.SetValue(savedInfo, propValue);
                     sb.Append($"Value '{propValue}' stored in property '{propName}'.{Environment.NewLine}");
                 }
+
+                //if (DateTime.TryParseExact(propValue, "MM-dd-yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out dateTime))
+                //{
+                //    propertyInfo.SetValue(savedInfo, dateTime);
+                //} Add code to process DateTime information
+
             }
             
-            outputTB1.AppendText($"\n{sb.ToString()}\n{JobInfoToString(savedInfo)}");
+            outputTB1.AppendText($"\n{sb}\n{JobInfoToString(savedInfo)}");
         }
 
 
@@ -528,8 +558,10 @@ namespace CWLatheTurn{
 
         private void RemButton3_Click(object sender, EventArgs e) //currently debug button
         {
-            string str = "JobInfo:{WO, 12345; Name, Nick Sancheth; Engine, LS9; CrankMfg, Callies; Date, 11/3/2020 12:00:00 AM; ImbaRad, 3.25; ImbaAng, 0; ImbaMass, 0} | Measurements:{0,1;2,3;4,5}";
-            LoadData(str);
+            string str = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^";
+            //outputTB1.Text = SaveDataSerialize(savedInfo, dt);
+            StringToJobInfo(str); //Not storing anything past Crank MFG
+            //StringToMeasTable(str); //WORKS!!!!
         }
     }
 }
