@@ -32,18 +32,6 @@ namespace CWLatheTurn{
         //DATA
         DataTable dt = new DataTable();
         DataTable st = new DataTable();
-
-        public static class Delims
-        {
-            public const string infoData = "`||`";
-            public const string type = "#:";
-            public const string propVal = ",*";
-            public const string measInfo = ";`";
-            public const string start = "^{";
-            public const string end = "}^";
-        }
-
-
         JobInfo savedInfo = new JobInfo
         {
             WO = 12345,
@@ -57,6 +45,15 @@ namespace CWLatheTurn{
         string defaultPath = Path.GetFullPath(@"C:\Users\machine shop\source\repos\CWLatheTurn\SaveLoad Files");
         string defaultFileName = "ThisIsTheDefaultFileName";
 
+        public static class Delims
+        {
+            public const string infoData = "`||`";
+            public const string type = "#:";
+            public const string propVal = ",*";
+            public const string measInfo = ";`";
+            public const string start = "^{";
+            public const string end = "}^";
+        }
         public class JobInfo
         {
             public int WO { get; set; }
@@ -67,11 +64,6 @@ namespace CWLatheTurn{
             public decimal ImbaRad { get; set; }
             public decimal ImbaAng { get; set; }
             public decimal ImbaMass { get; set; }
-        }
-
-        void outputTB1Print ()
-        {
-            outputTB1.Text = SaveDataSerialize(savedInfo, dt);
         }
 
         string SaveDataSerialize (JobInfo ji, DataTable mt) //serializes Job Info and Datatable and returns string
@@ -172,7 +164,9 @@ namespace CWLatheTurn{
                 .Split(dE, StringSplitOptions.None)[0]
                 .Split(dMI, StringSplitOptions.None);
 
-            int i = 1;
+            JobInfo testInfo = new JobInfo();
+
+            //int i = 1;
             StringBuilder sb = new StringBuilder();
             sb.Append(Environment.NewLine);
             outputTB1.Text = $"subStr1.count = {subStr1.Length}";
@@ -181,24 +175,62 @@ namespace CWLatheTurn{
             {
                 string propName = subStr2.Split(dPV, StringSplitOptions.None)[0].Trim();
                 string propValue = subStr2.Split(dPV, StringSplitOptions.None)[1].Trim();
-                DateTime dateTime;
 
                 PropertyInfo propertyInfo = typeof(JobInfo).GetProperty(propName);
-                if (propertyInfo != null && propertyInfo.PropertyType == typeof(string))
+
+                if (TryGetPropertyType<JobInfo>(propName, out Type propType))
                 {
-                    // Set the value of the property using reflection                    
-                    propertyInfo.SetValue(savedInfo, propValue);
-                    sb.Append($"Value '{propValue}' stored in property '{propName}'.{Environment.NewLine}");
+                    switch (propType.Name)
+                    {
+                        case "String":
+                            propertyInfo.SetValue(testInfo, propValue);
+                            sb.Append($"Value '{propValue}' of type '{propType.Name}' stored in property '{propName}'.{Environment.NewLine}");
+                            break;
+                        case "Decimal":
+                            decimal decOut;
+                            if (decimal.TryParse(propValue, out decOut))
+                            {
+                                propertyInfo.SetValue(testInfo, decOut);
+                            }
+                            sb.Append($"Value '{propValue}' of type '{propType.Name}' stored in property '{propName}'.{Environment.NewLine}");
+                            break;
+                        case "DateTime":
+                            DateTime dtOut;
+                            if (DateTime.TryParse(propValue, out dtOut))
+                            {
+                                propertyInfo.SetValue(testInfo, dtOut);
+                            }
+                            sb.Append($"Value '{propValue}' of type '{propType.Name}' stored in property '{propName}'.{Environment.NewLine}");
+                            break;
+                        // Add more cases for other types as needed
+                        default:
+                            Console.WriteLine($"Property '{propName}' is of unknown type: {propType.Name}");
+                            break;
+                    }
                 }
+                else
+                {
+                    Console.WriteLine($"Property '{propName}' not found.");
+                }
+            }            
+            outputTB1.AppendText($"{sb}{Environment.NewLine}{JobInfoToString(testInfo)}");
+        }
 
-                //if (DateTime.TryParseExact(propValue, "MM-dd-yyyy HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out dateTime))
-                //{
-                //    propertyInfo.SetValue(savedInfo, dateTime);
-                //} Add code to process DateTime information
+        static bool TryGetPropertyType<T>(string propertyName, out Type propertyType)
+        {
+            Type type = typeof(T);
+            PropertyInfo property = type.GetProperty(propertyName);
 
+            if (property != null)
+            {
+                propertyType = property.PropertyType;
+                return true;
             }
-            
-            outputTB1.AppendText($"\n{sb}\n{JobInfoToString(savedInfo)}");
+            else
+            {
+                propertyType = null;
+                return false;
+            }
         }
 
 
@@ -280,22 +312,6 @@ namespace CWLatheTurn{
             catch (Exception e) 
             {
                 MessageBox.Show("Error: Could not save file. " + e.Message);
-            }
-        }
-
-        public string SaveConvert (JobInfo jobInfo, DataTable dt)
-        {
-            string strOutput = "";
-
-            try
-            {
-
-
-                return strOutput;
-            }
-            catch
-            {
-                return "Data Conversion to string failed.";
             }
         }
 
