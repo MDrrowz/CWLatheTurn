@@ -18,8 +18,9 @@ using System.Xml.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace CWLatheTurn{
-    
+namespace CWLatheTurn
+{
+
 
     public partial class Form1 : Form
     {
@@ -27,14 +28,14 @@ namespace CWLatheTurn{
         {
             InitializeComponent();
             InitDGV1();
-        }        
+        }
 
         //DATA
         DataTable dt = new DataTable();
         DataTable st = new DataTable();
         JobInfo savedInfo = new JobInfo
         {
-            WO = 12345,
+            WO = "12345",
             Name = "Sick Nancheth",
             Engine = "LS3",
             CrankMfg = "OE",
@@ -44,6 +45,8 @@ namespace CWLatheTurn{
 
         string defaultPath = Path.GetFullPath(@"C:\Users\machine shop\source\repos\CWLatheTurn\SaveLoad Files");
         string defaultFileName = "ThisIsTheDefaultFileName";
+
+        Color tbInvalid = Color.Yellow;
 
         public static class Delims
         {
@@ -56,7 +59,7 @@ namespace CWLatheTurn{
         }
         public class JobInfo
         {
-            public int WO { get; set; }
+            public string WO { get; set; }
             public string Name { get; set; }
             public string Engine { get; set; }
             public string CrankMfg { get; set; }
@@ -66,13 +69,13 @@ namespace CWLatheTurn{
             public decimal ImbaMass { get; set; }
         }
 
-        string SaveDataSerialize (JobInfo ji, DataTable mt) //serializes Job Info and Datatable and returns string
+        string SaveDataSerialize(JobInfo ji, DataTable mt) //serializes Job Info and Datatable and returns string
         {
             StringBuilder outString = new StringBuilder();
             return outString.Append($"{JobInfoToString(ji)}{Delims.infoData}{MeasTableToString(mt)}").ToString();
         }
 
-        string JobInfoToString (JobInfo info) //Serializes Job Info data and returns string
+        string JobInfoToString(JobInfo info) //Serializes Job Info data and returns string
         {
             PropertyInfo[] props = typeof(JobInfo).GetProperties();
             StringBuilder sb = new StringBuilder();
@@ -86,17 +89,17 @@ namespace CWLatheTurn{
                     sb.Append($"{prop.Name}{Delims.propVal}{prop.GetValue(info)}");
                     if (iter < props.Count()) sb.Append($"{Delims.measInfo}");
                     iter++;
-                }                
+                }
             }
-            catch 
+            catch
             {
                 sb.Append("Datatable is NULL");
             }
             sb.Append($"{Delims.end}");
             return sb.ToString();
-        }     
-        
-        string MeasTableToString (DataTable dt) //Serializes measurement datatable info and returns string 
+        }
+
+        string MeasTableToString(DataTable dt) //Serializes measurement datatable info and returns string 
         {
 
 
@@ -123,7 +126,7 @@ namespace CWLatheTurn{
 
             string[] dID = { Delims.infoData };
             string[] dType = { Delims.type };
-            string[] dPV = {  Delims.propVal };
+            string[] dPV = { Delims.propVal };
             string[] dMI = { Delims.measInfo };
             string[] dS = { Delims.start };
             string[] dE = { Delims.end };
@@ -149,7 +152,7 @@ namespace CWLatheTurn{
             DGV1reload();
         }
 
-        void StringToJobInfo (string saveStr)
+        void StringToJobInfo(string saveStr)
         {
             string[] dID = { Delims.infoData };
             string[] dType = { Delims.type };
@@ -184,7 +187,7 @@ namespace CWLatheTurn{
                     {
                         case "String":
                             propertyInfo.SetValue(testInfo, propValue);
-                            sb.Append($"Value '{propValue}' of type '{propType.Name}' stored in property '{propName}'.{Environment.NewLine}");
+                            sb.Append(propStoredString(propValue, propName, propType));
                             break;
                         case "Decimal":
                             decimal decOut;
@@ -192,7 +195,7 @@ namespace CWLatheTurn{
                             {
                                 propertyInfo.SetValue(testInfo, decOut);
                             }
-                            sb.Append($"Value '{propValue}' of type '{propType.Name}' stored in property '{propName}'.{Environment.NewLine}");
+                            sb.Append(propStoredString(propValue, propName, propType));
                             break;
                         case "DateTime":
                             DateTime dtOut;
@@ -200,7 +203,15 @@ namespace CWLatheTurn{
                             {
                                 propertyInfo.SetValue(testInfo, dtOut);
                             }
-                            sb.Append($"Value '{propValue}' of type '{propType.Name}' stored in property '{propName}'.{Environment.NewLine}");
+                            sb.Append(propStoredString(propValue, propName, propType));
+                            break;
+                        case "Int":
+                            int intOut;
+                            if (int.TryParse(propValue, out intOut))
+                            {
+                                propertyInfo.SetValue(testInfo, intOut);
+                            }
+                            sb.Append(propStoredString(propValue, propName, propType));
                             break;
                         // Add more cases for other types as needed
                         default:
@@ -212,8 +223,13 @@ namespace CWLatheTurn{
                 {
                     Console.WriteLine($"Property '{propName}' not found.");
                 }
-            }            
+            }
             outputTB1.AppendText($"{sb}{Environment.NewLine}{JobInfoToString(testInfo)}");
+        }
+
+        private string propStoredString(string pV, string pN, Type pT)
+        {
+            return ($"Value '{pV}' of type '{pT.Name}' stored in property '{pN}'.{Environment.NewLine}");
         }
 
         static bool TryGetPropertyType<T>(string propertyName, out Type propertyType)
@@ -235,19 +251,18 @@ namespace CWLatheTurn{
 
 
         //SAVE/LOAD FILE
-        public void LoadFile() //unfinished
+        public string readSaveFile() //unfinished
         {
-                if (true) //ADD LOAD CONDITIONS HERE (SET TO TRUE FOR DEBUG)
-                {
+            if (true) //ADD LOAD CONDITIONS HERE (SET TO TRUE FOR DEBUG)
+            {
                 st.Clear(); //clears storage datatable
                 st = dt; //save measurement datatable to storage datatable
-                //dt.Clear();  //UNCOMMENT WHEN LOAD IS IMPLEMENTED
 
-                Stream openStream = null;
-                OpenFileDialog openFileDialog = new OpenFileDialog();
+                Stream openStream = null; //createes empty IOstream
+                OpenFileDialog openFileDialog = new OpenFileDialog(); //opens load file dialogue
                 openFileDialog.Title = "Load Job File";
                 openFileDialog.Filter = "Counter-Weight Lathe Turn files|*.cwlt";
-                openFileDialog.InitialDirectory = @"C:\Users\machine shop\source\repos\CWLatheTurn\SaveLoad Files"; //functionality confirmed
+                openFileDialog.InitialDirectory = @"C:\Users\machine shop\source\repos\CWLatheTurn\SaveLoad Files"; //functionality confirmed, add functionality to establish default save file in settings
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     try
@@ -259,23 +274,41 @@ namespace CWLatheTurn{
                                 StreamReader sr = new StreamReader(openStream);
                                 string cwlt = sr.ReadToEnd();
                                 sr.Close();
-                                DGV1reload(); //reload datatable to datagridview1
+                                return cwlt;
                             }
                         }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("Error: Could not load file.\n" + ex.Message);
+                        return null;
                     }
                 }
-
             }
+            return null;
         }
 
-        public void LoadData(string str)
+        public void ImportStringData(string str)
         {
             StringToMeasTable(str);
-            StringToJobInfo(str);            
+            StringToJobInfo(str);
+        }
+
+        public void LoadSaveData()
+        {
+            string loadData = null;
+            loadData = readSaveFile();
+            try
+            {
+                if (loadData != null)
+                {
+                    ImportStringData(loadData);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Load data could not be properly read/imported.", "Load Data Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         public void SaveFile() //Saves CWLT file of datatable
@@ -299,23 +332,20 @@ namespace CWLatheTurn{
                     {
                         string path = Path.GetFullPath(saveDia1.FileName); //saves file save path/name to string
                         string saveStr = string.Empty;
-
-
+                        saveStr = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^";
 
                         outputTB1.Text = $@"{path}: {saveStr}"; //outputs CWLT string in textbox for debug
-                        File.WriteAllText($@"{path}", saveStr);  //saves string to CWLT file                        
-
-                        string readSavefile = File.ReadAllText($@"{path}");
+                        File.WriteAllText($@"{path}", saveStr);  //saves string to CWLT file   
                     }
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 MessageBox.Show("Error: Could not save file. " + e.Message);
             }
         }
 
-        private void InitDGV1 ()
+        private void InitDGV1()
         {
             dt.Columns.Add("#", typeof(int));
             dt.Columns.Add("Angle", typeof(decimal));
@@ -436,6 +466,36 @@ namespace CWLatheTurn{
             dt.Rows[rowIndex].SetField("Value", value);
         }
 
+        private void CWRadButtonText(object sender)
+        {
+            const string str1 = "CW Radius";
+            const string str2 = "Journal to CW";
+
+            System.Windows.Forms.Button button = (System.Windows.Forms.Button)sender;
+            switch (button.Text)
+            {
+                case str1: //button text = "CW Radius"
+                    button.Text = str2;
+                    //disable Radius textbox editing
+                    cwrCalcTB.Visible = true;
+                    cwrTB.Visible = false;
+                    journalDiaTB.Enabled = true;
+                    jtcwTB.Enabled = true;
+                    break;
+                case str2: //button text = "Journal to CW"
+                    button.Text = str1; //button text changed to "CW Radius"
+                    cwrCalcTB.Visible = false;
+                    cwrTB.Visible = true;
+                    journalDiaTB.Enabled = false;
+                    jtcwTB.Enabled = false;
+                    break;
+                default:
+                    MessageBox.Show("Counter-weight radius input error.", "CW Rad Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+            }
+            cwRadCalc();
+        }
+
 
         //INPUT/DATA VALIDATION
         private int AngleExists(string angle) //returns index of row with matching angle value or -1 if angle is not found
@@ -464,7 +524,7 @@ namespace CWLatheTurn{
                 return false;
             }
             if (null != valTxt
-                && (!StrIsDecimal(valTxt) || !StrIsPositive(valTxt))) //sets var to false if value is not a positive decimal
+                && PosDecCheck(valTxt)) //sets var to false if value is not a positive decimal
             {
                 valValid = false;
             }
@@ -493,6 +553,12 @@ namespace CWLatheTurn{
                 return false;
             }
             return true;
+        }
+
+        private bool PosDecCheck (string str)
+        {
+            if (StrIsDecimal(str) && StrIsPositive(str)) return true;
+            else return false;
         }
 
         private void InvInputStatus(char c) //status label input error output
@@ -536,8 +602,25 @@ namespace CWLatheTurn{
 
         private bool StrIsDecimal(string str) //returns true if String is a decimal
         {
-            if (Decimal.TryParse(str, out _)) return true;
+            if (Decimal.TryParse(str.Trim(), out _)) return true;
             return false;
+        }
+
+        private bool tbleaveCheck(object sender) //validates textbox input is a positive decimal or refocuses textbox and changes background to yellow
+        {
+            System.Windows.Forms.TextBox tb = (System.Windows.Forms.TextBox)sender;
+            string str = tb.Text;
+            if (!StrIsDecimal(str) || !StrIsPositive(str))
+            {
+                if (str != "")
+                {
+                    tb.BackColor = tbInvalid;
+                    tb.Focus();
+                    return false;
+                }
+            }
+            tb.BackColor = SystemColors.Window;
+            return true;
         }
 
 
@@ -569,7 +652,7 @@ namespace CWLatheTurn{
 
         private void LoadButton_Click(object sender, EventArgs e)
         {
-            LoadFile();
+            LoadSaveData();
         }
 
         private void RemButton3_Click(object sender, EventArgs e) //currently debug button
@@ -579,5 +662,56 @@ namespace CWLatheTurn{
             StringToJobInfo(str); //Not storing anything past Crank MFG
             //StringToMeasTable(str); //WORKS!!!!
         }
+
+        private void CWRadButton_Click(object sender, EventArgs e)
+        {
+            CWRadButtonText(sender);
+        }
+
+        private void journalDiaTB_Leave(object sender, EventArgs e)
+        {
+            tbleaveCheck(sender);
+            cwRadCalc();
+        }
+
+        private void cwrTB_Leave(object sender, EventArgs e)
+        {
+            tbleaveCheck(sender);
+            cwRadCalc();
+        }
+
+        private void jtcwTB_Leave(object sender, EventArgs e)
+        {
+            tbleaveCheck(sender);
+            cwRadCalc();
+        }
+
+        void cwRadCalc ()
+        {
+            cwrCalcTB.Clear();
+            const string str1 = "CW Radius";
+            const string str2 = "Journal to CW";
+
+            switch (CWRadButton.Text)
+            {
+                case str1 :
+                    if (PosDecCheck(cwrTB.Text)) cwrCalcTB.Text = cwrTB.Text.Trim();
+                    break;
+                case str2 :
+                    if (journalDiaTB.Text.Trim().Length > 0 && jtcwTB.Text.Trim().Length > 0)
+                    {
+                        decimal d1 = Decimal.Parse(journalDiaTB.Text.Trim()) / 2;
+                        decimal d2 = Decimal.Parse(jtcwTB.Text.Trim());
+                        cwrCalcTB.Text = (d1 + d2).ToString();
+                    }
+                    break;
+                default :
+                    break;
+            }
+
+
+            outputTB1.Text = cwrCalcTB.Text;
+        }
     }
 }
+

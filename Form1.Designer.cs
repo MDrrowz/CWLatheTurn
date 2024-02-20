@@ -35,7 +35,16 @@ namespace CWLatheTurn
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.loadTB1 = new System.Windows.Forms.TextBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.cwrTB = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.jtcwTB = new System.Windows.Forms.TextBox();
+            this.journalDiaTB = new System.Windows.Forms.TextBox();
+            this.journalDiaLabel = new System.Windows.Forms.Label();
+            this.CWRadButton = new System.Windows.Forms.Button();
+            this.CWMaxR = new System.Windows.Forms.Label();
+            this.cwrCalcTB = new System.Windows.Forms.TextBox();
             this.outputTB1 = new System.Windows.Forms.TextBox();
             this.LoadButton = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
@@ -59,6 +68,7 @@ namespace CWLatheTurn
             this.statusStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -96,7 +106,7 @@ namespace CWLatheTurn
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.loadTB1);
+            this.tabPage1.Controls.Add(this.panel2);
             this.tabPage1.Controls.Add(this.outputTB1);
             this.tabPage1.Controls.Add(this.LoadButton);
             this.tabPage1.Controls.Add(this.SaveButton);
@@ -112,17 +122,110 @@ namespace CWLatheTurn
             this.tabPage1.Text = "Measurements";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // loadTB1
+            // panel2
             // 
-            this.loadTB1.Location = new System.Drawing.Point(333, 139);
-            this.loadTB1.Multiline = true;
-            this.loadTB1.Name = "loadTB1";
-            this.loadTB1.Size = new System.Drawing.Size(317, 110);
-            this.loadTB1.TabIndex = 11;
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.cwrTB);
+            this.panel2.Controls.Add(this.label5);
+            this.panel2.Controls.Add(this.label4);
+            this.panel2.Controls.Add(this.jtcwTB);
+            this.panel2.Controls.Add(this.journalDiaTB);
+            this.panel2.Controls.Add(this.journalDiaLabel);
+            this.panel2.Controls.Add(this.CWRadButton);
+            this.panel2.Controls.Add(this.CWMaxR);
+            this.panel2.Controls.Add(this.cwrCalcTB);
+            this.panel2.Location = new System.Drawing.Point(320, 6);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(152, 172);
+            this.panel2.TabIndex = 13;
+            // 
+            // cwrTB
+            // 
+            this.cwrTB.Location = new System.Drawing.Point(3, 140);
+            this.cwrTB.Name = "cwrTB";
+            this.cwrTB.Size = new System.Drawing.Size(86, 20);
+            this.cwrTB.TabIndex = 11;
+            this.cwrTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.cwrTB.Leave += new System.EventHandler(this.cwrTB_Leave);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 124);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(117, 13);
+            this.label5.TabIndex = 10;
+            this.label5.Text = "Counter Weight Radius";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 85);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(130, 13);
+            this.label4.TabIndex = 9;
+            this.label4.Text = "Journal to Counter Weight";
+            // 
+            // jtcwTB
+            // 
+            this.jtcwTB.Enabled = false;
+            this.jtcwTB.Location = new System.Drawing.Point(3, 101);
+            this.jtcwTB.Name = "jtcwTB";
+            this.jtcwTB.Size = new System.Drawing.Size(86, 20);
+            this.jtcwTB.TabIndex = 8;
+            this.jtcwTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.jtcwTB.Leave += new System.EventHandler(this.jtcwTB_Leave);
+            // 
+            // journalDiaTB
+            // 
+            this.journalDiaTB.Enabled = false;
+            this.journalDiaTB.Location = new System.Drawing.Point(3, 62);
+            this.journalDiaTB.Name = "journalDiaTB";
+            this.journalDiaTB.Size = new System.Drawing.Size(86, 20);
+            this.journalDiaTB.TabIndex = 7;
+            this.journalDiaTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.journalDiaTB.Leave += new System.EventHandler(this.journalDiaTB_Leave);
+            // 
+            // journalDiaLabel
+            // 
+            this.journalDiaLabel.AutoSize = true;
+            this.journalDiaLabel.Location = new System.Drawing.Point(3, 46);
+            this.journalDiaLabel.Name = "journalDiaLabel";
+            this.journalDiaLabel.Size = new System.Drawing.Size(86, 13);
+            this.journalDiaLabel.TabIndex = 2;
+            this.journalDiaLabel.Text = "Journal Diameter";
+            // 
+            // CWRadButton
+            // 
+            this.CWRadButton.Location = new System.Drawing.Point(6, 18);
+            this.CWRadButton.Name = "CWRadButton";
+            this.CWRadButton.Size = new System.Drawing.Size(137, 23);
+            this.CWRadButton.TabIndex = 1;
+            this.CWRadButton.Text = "CW Radius";
+            this.CWRadButton.UseVisualStyleBackColor = true;
+            this.CWRadButton.Click += new System.EventHandler(this.CWRadButton_Click);
+            // 
+            // CWMaxR
+            // 
+            this.CWMaxR.AutoSize = true;
+            this.CWMaxR.Location = new System.Drawing.Point(3, 2);
+            this.CWMaxR.Name = "CWMaxR";
+            this.CWMaxR.Size = new System.Drawing.Size(143, 13);
+            this.CWMaxR.TabIndex = 0;
+            this.CWMaxR.Text = "Counter Weight Max Radius:";
+            // 
+            // cwrCalcTB
+            // 
+            this.cwrCalcTB.Enabled = false;
+            this.cwrCalcTB.Location = new System.Drawing.Point(3, 140);
+            this.cwrCalcTB.Name = "cwrCalcTB";
+            this.cwrCalcTB.Size = new System.Drawing.Size(86, 20);
+            this.cwrCalcTB.TabIndex = 12;
+            this.cwrCalcTB.Visible = false;
             // 
             // outputTB1
             // 
-            this.outputTB1.Location = new System.Drawing.Point(333, 12);
+            this.outputTB1.Location = new System.Drawing.Point(379, 224);
             this.outputTB1.Multiline = true;
             this.outputTB1.Name = "outputTB1";
             this.outputTB1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -175,6 +278,7 @@ namespace CWLatheTurn
             // 
             // panel1
             // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.remButton3);
             this.panel1.Controls.Add(this.modButton2);
             this.panel1.Controls.Add(this.addButton1);
@@ -184,7 +288,7 @@ namespace CWLatheTurn
             this.panel1.Controls.Add(this.textBox1);
             this.panel1.Location = new System.Drawing.Point(198, 6);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(107, 165);
+            this.panel1.Size = new System.Drawing.Size(116, 165);
             this.panel1.TabIndex = 3;
             // 
             // remButton3
@@ -220,7 +324,7 @@ namespace CWLatheTurn
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 51);
+            this.label2.Location = new System.Drawing.Point(3, 43);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(71, 13);
             this.label2.TabIndex = 4;
@@ -229,7 +333,7 @@ namespace CWLatheTurn
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 6);
+            this.label1.Location = new System.Drawing.Point(3, 3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(34, 13);
             this.label1.TabIndex = 3;
@@ -237,14 +341,14 @@ namespace CWLatheTurn
             // 
             // AngleTextBox1
             // 
-            this.AngleTextBox1.Location = new System.Drawing.Point(3, 22);
+            this.AngleTextBox1.Location = new System.Drawing.Point(3, 19);
             this.AngleTextBox1.Name = "AngleTextBox1";
             this.AngleTextBox1.Size = new System.Drawing.Size(100, 20);
             this.AngleTextBox1.TabIndex = 1;
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(3, 67);
+            this.textBox1.Location = new System.Drawing.Point(3, 59);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(100, 20);
             this.textBox1.TabIndex = 2;
@@ -338,6 +442,8 @@ namespace CWLatheTurn
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
@@ -374,7 +480,16 @@ namespace CWLatheTurn
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.TextBox outputTB1;
-        private System.Windows.Forms.TextBox loadTB1;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label CWMaxR;
+        private System.Windows.Forms.Button CWRadButton;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox jtcwTB;
+        private System.Windows.Forms.TextBox journalDiaTB;
+        private System.Windows.Forms.Label journalDiaLabel;
+        private System.Windows.Forms.TextBox cwrTB;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox cwrCalcTB;
     }
 
     
