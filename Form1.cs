@@ -307,7 +307,7 @@ namespace CWLatheTurn
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Load data could not be properly read/imported.", "Load Data Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Load data could not be properly read/imported. Exception:{ex}", "Load Data Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -555,7 +555,7 @@ namespace CWLatheTurn
             return true;
         }
 
-        private bool PosDecCheck (string str)
+        private bool PosDecCheck(string str)
         {
             if (StrIsDecimal(str) && StrIsPositive(str)) return true;
             else return false;
@@ -657,10 +657,14 @@ namespace CWLatheTurn
 
         private void RemButton3_Click(object sender, EventArgs e) //currently debug button
         {
-            string str = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^";
+            //string str = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^";
             //outputTB1.Text = SaveDataSerialize(savedInfo, dt);
-            StringToJobInfo(str); //Not storing anything past Crank MFG
+            //StringToJobInfo(str); //Not storing anything past Crank MFG
             //StringToMeasTable(str); //WORKS!!!!
+            string str = "WO123#:45 ";
+            string checkOut = JICheck(str);
+            outputTB1.Text = $@"JobInfo: ""{str}""; JICheck = {checkOut}";
+            
         }
 
         private void CWRadButton_Click(object sender, EventArgs e)
@@ -686,7 +690,7 @@ namespace CWLatheTurn
             cwRadCalc();
         }
 
-        void cwRadCalc ()
+        private void cwRadCalc()
         {
             cwrCalcTB.Clear();
             const string str1 = "CW Radius";
@@ -694,10 +698,10 @@ namespace CWLatheTurn
 
             switch (CWRadButton.Text)
             {
-                case str1 :
+                case str1:
                     if (PosDecCheck(cwrTB.Text)) cwrCalcTB.Text = cwrTB.Text.Trim();
                     break;
-                case str2 :
+                case str2:
                     if (journalDiaTB.Text.Trim().Length > 0 && jtcwTB.Text.Trim().Length > 0)
                     {
                         decimal d1 = Decimal.Parse(journalDiaTB.Text.Trim()) / 2;
@@ -705,12 +709,36 @@ namespace CWLatheTurn
                         cwrCalcTB.Text = (d1 + d2).ToString();
                     }
                     break;
-                default :
+                default:
                     break;
             }
 
 
             outputTB1.Text = cwrCalcTB.Text;
+        }
+
+        private string JICheck(string input) //add sender //does not work
+        {
+            input = input.Trim();
+            StringBuilder sb = new StringBuilder();
+            PropertyInfo[] properties = typeof(Delims).GetProperties(BindingFlags.Public | BindingFlags.Static);
+            outputTB1.Text += $@"input: ""{input}""{Environment.NewLine}";
+
+            // Iterate through each property
+            foreach (PropertyInfo property in properties)
+            {
+                string[] delim = {property.GetValue(null).ToString() };
+                string substr = input.Split(delim, StringSplitOptions.None)[0];
+
+                if (input != substr)
+                {
+                    sb.Clear();
+                    sb.Append($"{property.Name} contains {delim}.");
+                    return sb.ToString();
+                }
+            }
+
+            return null;
         }
     }
 }
