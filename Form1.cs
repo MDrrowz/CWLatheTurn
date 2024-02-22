@@ -663,7 +663,8 @@ namespace CWLatheTurn
             //StringToMeasTable(str); //WORKS!!!!
             string str = "WO123#:45 ";
             string checkOut = JICheck(str);
-            outputTB1.Text = $@"JobInfo: ""{str}""; JICheck = {checkOut}";
+            outputTB1.AppendText(Environment.NewLine); 
+            outputTB1.AppendText($@"JobInfo: ""{str}""; JICheck = {checkOut}");
             
         }
 
@@ -719,26 +720,51 @@ namespace CWLatheTurn
 
         private string JICheck(string input) //add sender //does not work
         {
-            input = input.Trim();
-            StringBuilder sb = new StringBuilder();
-            PropertyInfo[] properties = typeof(Delims).GetProperties(BindingFlags.Public | BindingFlags.Static);
-            outputTB1.Text += $@"input: ""{input}""{Environment.NewLine}";
+            input = input.Trim();//trims input string of whitespace
+            Console.WriteLine ($@"input: ""{input}""{Environment.NewLine}"); //console debug output
 
-            // Iterate through each property
-            foreach (PropertyInfo property in properties)
+            Type delimsType = typeof(Delims);
+            PropertyInfo[] properties = delimsType.GetProperties(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var property in properties)
             {
-                string[] delim = {property.GetValue(null).ToString() };
-                string substr = input.Split(delim, StringSplitOptions.None)[0];
-
-                if (input != substr)
-                {
-                    sb.Clear();
-                    sb.Append($"{property.Name} contains {delim}.");
-                    return sb.ToString();
-                }
+                //if (property.PropertyType == typeof(string))
+                //{
+                string propertyName = property.Name;
+                string propertyValue = (string)property.GetValue(null);
+                textBox1.AppendText($"{propertyName}: {propertyValue}");
+                textBox1.AppendText(Environment.NewLine);
+                //}
             }
 
-            return null;
+
+            //var properties = typeof(Delims).GetProperties(); //Reflect all properties from Delims class
+
+
+
+            //string[] delimArray = new string[properties.Length]; //create array to store string values
+
+            //Console.WriteLine("Delims:"); //Console debug output of delims stored in string
+            //for (int i = 0; i < properties.Length; i++) //for loop through properties
+            //{
+            //    //if (properties[i].PropertyType == typeof(string)) //if property is string
+            //    //{
+            //        delimArray[i] = (string)properties[i].GetValue(null); //stores string value in array
+            //        Console.WriteLine($"delimArray[i]: {delimArray[i]}"); //Debug console output of delims
+
+            //        string[] delim = { $"{delimArray[i]}" };
+            //        string splitStr = input.Split(delim, StringSplitOptions.None)[0];
+            //        Console.WriteLine($"splitStr = {splitStr}");
+            //        if (input != splitStr)
+            //        {
+            //            Console.WriteLine("input != splitStr");
+            //            StringBuilder sb = new StringBuilder();
+            //            sb.Append($@"Input: ""{input}"" contains delim string ""{delimArray[i]}""");
+            //            return sb.ToString();
+            //        }
+            //    //}
+            //}
+            return "End of function.";
         }
     }
 }
