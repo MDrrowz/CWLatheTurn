@@ -17,11 +17,11 @@ using System.Reflection;
 using System.Xml.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.CodeDom;
+using System.Runtime.Remoting.Messaging;
 
 namespace CWLatheTurn
 {
-
-
     public partial class Form1 : Form
     {
         public Form1()
@@ -32,7 +32,9 @@ namespace CWLatheTurn
 
         //DATA
         DataTable dt = new DataTable();
+        DataTable displayt = new DataTable();
         DataTable st = new DataTable();
+        JobInfo ji = new JobInfo();
         JobInfo savedInfo = new JobInfo
         {
             WO = "12345",
@@ -56,6 +58,7 @@ namespace CWLatheTurn
             public const string measInfo = ";`";
             public const string start = "^{";
             public const string end = "}^";
+
         }
         public class JobInfo
         {
@@ -69,10 +72,10 @@ namespace CWLatheTurn
             public decimal ImbaMass { get; set; }
         }
 
-        string SaveDataSerialize(JobInfo ji, DataTable mt) //serializes Job Info and Datatable and returns string
+        string SaveDataSerialize(JobInfo jobInfo, DataTable dataTable) //serializes Job Info and Datatable and returns string
         {
             StringBuilder outString = new StringBuilder();
-            return outString.Append($"{JobInfoToString(ji)}{Delims.infoData}{MeasTableToString(mt)}").ToString();
+            return outString.Append($"{JobInfoToString(jobInfo)}{Delims.infoData}{MeasTableToString(dataTable)}").ToString();
         }
 
         string JobInfoToString(JobInfo info) //Serializes Job Info data and returns string
@@ -227,7 +230,7 @@ namespace CWLatheTurn
             outputTB1.AppendText($"{sb}{Environment.NewLine}{JobInfoToString(testInfo)}");
         }
 
-        private string propStoredString(string pV, string pN, Type pT)
+        string propStoredString(string pV, string pN, Type pT)
         {
             return ($"Value '{pV}' of type '{pT.Name}' stored in property '{pN}'.{Environment.NewLine}");
         }
@@ -251,14 +254,14 @@ namespace CWLatheTurn
 
 
         //SAVE/LOAD FILE
-        public string readSaveFile() //unfinished
+        string readSaveFile() //finished?
         {
             if (true) //ADD LOAD CONDITIONS HERE (SET TO TRUE FOR DEBUG)
             {
                 st.Clear(); //clears storage datatable
                 st = dt; //save measurement datatable to storage datatable
 
-                Stream openStream = null; //createes empty IOstream
+                Stream openStream = null; //creates empty IOstream
                 OpenFileDialog openFileDialog = new OpenFileDialog(); //opens load file dialogue
                 openFileDialog.Title = "Load Job File";
                 openFileDialog.Filter = "Counter-Weight Lathe Turn files|*.cwlt";
@@ -288,13 +291,7 @@ namespace CWLatheTurn
             return null;
         }
 
-        public void ImportStringData(string str)
-        {
-            StringToMeasTable(str);
-            StringToJobInfo(str);
-        }
-
-        public void LoadSaveData()
+        void LoadSaveData()
         {
             string loadData = null;
             loadData = readSaveFile();
@@ -302,7 +299,8 @@ namespace CWLatheTurn
             {
                 if (loadData != null)
                 {
-                    ImportStringData(loadData);
+                    StringToMeasTable(loadData);
+                    StringToJobInfo(loadData);
                 }
             }
             catch (Exception ex)
@@ -311,7 +309,7 @@ namespace CWLatheTurn
             }
         }
 
-        public void SaveFile() //Saves CWLT file of datatable
+        void SaveFile() //Saves CWLT file of datatable
         {
             try
             {
@@ -332,10 +330,11 @@ namespace CWLatheTurn
                     {
                         string path = Path.GetFullPath(saveDia1.FileName); //saves file save path/name to string
                         string saveStr = string.Empty;
-                        saveStr = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^";
+                        saveStr = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^"; //debug info string
+                        //saveStr = SaveDataSerialize(ji, dt);
 
-                        outputTB1.Text = $@"{path}: {saveStr}"; //outputs CWLT string in textbox for debug
-                        File.WriteAllText($@"{path}", saveStr);  //saves string to CWLT file   
+                        Console.WriteLine(path + ": " + saveStr); //outputs CWLT string in textbox for debug
+                        File.WriteAllText(path, saveStr);  //saves string to CWLT file   
                     }
                 }
             }
@@ -345,11 +344,12 @@ namespace CWLatheTurn
             }
         }
 
-        private void InitDGV1()
+        void InitDGV1()
         {
             dt.Columns.Add("#", typeof(int));
             dt.Columns.Add("Angle", typeof(decimal));
             dt.Columns.Add("Value", typeof(decimal));
+            dt.Columns.Add("Reading", typeof(decimal));
 
             DGV1reload();
 
@@ -359,9 +359,10 @@ namespace CWLatheTurn
             dataGridView1.Columns[0].Width = cWidth - cMarg;
             dataGridView1.Columns[1].Width = (dataGridView1.Width - cWidth) / 2;
             dataGridView1.Columns[2].Width = (dataGridView1.Width - cWidth) / 2;
+            dataGridView1.Columns[2].Width = (dataGridView1.Width - cWidth) / 2;
         }
 
-        private void AddMeas()//adds Measurement row
+        void AddMeas()//adds Measurement row
         {
             string angTxt = AngleTextBox1.Text.Trim();
             string valTxt = textBox1.Text.Trim();
@@ -384,7 +385,7 @@ namespace CWLatheTurn
             DGV1settings();
         }
 
-        private void ModMeas()//modifies Angle and/or Measurement value
+        void ModMeas()//modifies Angle and/or Measurement value
         {
             string angTxt = AngleTextBox1.Text.Trim();
             string valTxt = textBox1.Text.Trim();
@@ -426,23 +427,44 @@ namespace CWLatheTurn
             DGV1reload();
         }
 
-        private void MeasTypeChange(object sender, EventArgs e) //switches grid view values between radius/indicator reading (UNFINISHED)
+        void MeasTypeChange(object sender) //switches grid view values between radius/indicator reading (UNFINISHED)
         {
+            const string str1 = "Indicator Reading";
+            const string str2 = "Radius";
             //change column header name
             //popup zero-indicator reading value
-            foreach (DataColumn dc in dt.Columns)
+
+            System.Windows.Forms.Button button = (System.Windows.Forms.Button)sender;
+
+            switch (button.Text)
+            {
+                case str1:
+                    {
+                        button.Text = str2;
+                        dt.Columns[2].ColumnName = str2;
+                        break;
+                    }
+                case str2:
+                    {
+                        button.Text = str1;
+                        dt.Columns[2].ColumnName = str1;
+                        break;
+                    }
+            }
+
+            foreach (DataRow dc in dt.Columns)
             {
                 //if meastype = radius
                 //if meastype = reading
             }
         }
 
-        private void MeasListSort() //resort and update list in DataGridView (UNFINISHED)
+        void MeasListSort() //resort and update list in DataGridView (UNFINISHED)
         {
 
         }
 
-        private void DGV1settings() //settings for datagridview1
+        void DGV1settings() //settings for datagridview1
         {
             foreach (DataGridViewColumn column in dataGridView1.Columns)
             {
@@ -450,23 +472,78 @@ namespace CWLatheTurn
             }
         }
 
-        private void DGV1reload() //reloads DGV1
+        void DGV1reload() //reloads DGV1
         {
-            dataGridView1.DataSource = dt;
+            displayt.Clear();
+            displayt = dt;
+            dataGridView1.DataSource = displayt;
         }
 
-        private void ModAngle(decimal angle, int rowIndex) //modifies Angle in data table at rowindex
+        void ModAngle(decimal angle, int rowIndex) //modifies Angle in data table at rowindex
         {
             dt.Rows[rowIndex].SetField("Angle", angle);
             //re-sort angle into appropriate place in data table ///////////////////////////////////////////////////
         }
 
-        private void ModValue(decimal value, int rowIndex) //modifies Value in data table at rowindex
+        void ModValue(decimal value, int rowIndex) //modifies Value in data table at rowindex
         {
             dt.Rows[rowIndex].SetField("Value", value);
         }
 
-        private void CWRadButtonText(object sender)
+        void cwRadCalc()
+        {
+            cwrCalcTB.Clear();
+            const string str1 = "CW Radius";
+            const string str2 = "Journal to CW";
+
+            switch (CWRadButton.Text)
+            {
+                case str1:
+                    if (PosDecCheck(cwrTB.Text)) cwrCalcTB.Text = cwrTB.Text.Trim();
+                    break;
+                case str2:
+                    if (journalDiaTB.Text.Trim().Length > 0 && jtcwTB.Text.Trim().Length > 0)
+                    {
+                        decimal d1 = Decimal.Parse(journalDiaTB.Text.Trim()) / 2;
+                        decimal d2 = Decimal.Parse(jtcwTB.Text.Trim());
+                        cwrCalcTB.Text = (d1 + d2).ToString();
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+
+            outputTB1.Text = cwrCalcTB.Text;
+        }
+
+        string JICheck(string input) //add sender //does not work
+        {
+            input = input.Trim();//trims input string of whitespace
+            Console.WriteLine($@"input: ""{input}""{Environment.NewLine}"); //console debug output
+
+            FieldInfo[] fields = typeof(Delims).GetFields();
+
+            foreach (var field in fields)
+            {
+                string[] delim = { field.GetValue(null).ToString() };
+                //Console.WriteLine($"Delim {field.Name}: " + delim[0]);
+
+                string splitStr = input.Split(delim, StringSplitOptions.None)[0];
+                //Console.WriteLine($"splitStr = {splitStr}");
+
+                if (input != splitStr)
+                {
+                    //Console.WriteLine("input != splitStr");
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append($@"Input: ""{input}"" contains delim string ""{delim[0]}""");
+                    return sb.ToString();
+                }
+            }
+            return null;
+        }
+
+        void CWRadButtonText(object sender)
         {
             const string str1 = "CW Radius";
             const string str2 = "Journal to CW";
@@ -497,8 +574,9 @@ namespace CWLatheTurn
         }
 
 
+
         //INPUT/DATA VALIDATION
-        private int AngleExists(string angle) //returns index of row with matching angle value or -1 if angle is not found
+        int AngleExists(string angle) //returns index of row with matching angle value or -1 if angle is not found
         {
             int rowIndex = 0;
             foreach (DataRow dr in dt.Rows)
@@ -512,7 +590,7 @@ namespace CWLatheTurn
             return -1; //returns -1 if value is not found
         }
 
-        private bool ValidateMeasInput() //checks validity of Value/Angle inputs, returns validity: true/false
+        bool ValidateMeasInput() //checks validity of Value/Angle inputs, returns validity: true/false
         {
             string angTxt = AngleTextBox1.Text.Trim();
             string valTxt = textBox1.Text.Trim();
@@ -555,17 +633,17 @@ namespace CWLatheTurn
             return true;
         }
 
-        private bool PosDecCheck(string str)
+        bool PosDecCheck(string str)
         {
             if (StrIsDecimal(str) && StrIsPositive(str)) return true;
             else return false;
         }
 
-        private void InvInputStatus(char c) //status label input error output
+        void InvInputStatus(char c) //status label input error output
         {
             string angError = "Invalid angle input.";
-            string valError = $"Invalid {comboBox1.Text} input.";
-            string noInput = $"Missing angle and {comboBox1.Text} input.";
+            string valError = $"Invalid {measTypeButton.Text} input.";
+            string noInput = $"Missing angle and {measTypeButton.Text} input.";
             string angExists = "[Angle already exists]";
             string str = "Invalid Input.";
             switch (c)
@@ -589,7 +667,7 @@ namespace CWLatheTurn
             toolStripStatusLabel1.Text = str;
         }
 
-        private bool StrIsPositive(string str) //returns true if input is !null and a positive decimal
+        bool StrIsPositive(string str) //returns true if input is !null and a positive decimal
         {
             if (str == null)
             {
@@ -600,13 +678,13 @@ namespace CWLatheTurn
             return false;
         }
 
-        private bool StrIsDecimal(string str) //returns true if String is a decimal
+        bool StrIsDecimal(string str) //returns true if String is a decimal
         {
             if (Decimal.TryParse(str.Trim(), out _)) return true;
             return false;
         }
 
-        private bool tbleaveCheck(object sender) //validates textbox input is a positive decimal or refocuses textbox and changes background to yellow
+        bool tbleaveCheck(object sender) //validates textbox input is a positive decimal or refocuses textbox and changes background to yellow
         {
             System.Windows.Forms.TextBox tb = (System.Windows.Forms.TextBox)sender;
             string str = tb.Text;
@@ -625,18 +703,18 @@ namespace CWLatheTurn
 
 
         //FORM DESIGNER GENERATED CODE
-        private void AddButton1_Click(object sender, EventArgs e)
+        void AddButton1_Click(object sender, EventArgs e)
         {
             AddMeas();
             //AngleTextBox1.Select();
         }
 
-        private void ModButton2_Click(object sender, EventArgs e)
+        void ModButton2_Click(object sender, EventArgs e)
         {
             ModMeas();
         }
 
-        private void TextBox1_KeyPress(object sender, KeyPressEventArgs e)
+        void TextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
             {
@@ -645,126 +723,54 @@ namespace CWLatheTurn
             }
         }
 
-        private void SaveButton_Click(object sender, EventArgs e)
+        void SaveButton_Click(object sender, EventArgs e)
         {
             SaveFile();
         }
 
-        private void LoadButton_Click(object sender, EventArgs e)
+        void LoadButton_Click(object sender, EventArgs e)
         {
             LoadSaveData();
         }
 
-        private void RemButton3_Click(object sender, EventArgs e) //currently debug button
+        void RemButton3_Click(object sender, EventArgs e) //currently debug button
         {
             //string str = "JobInfo#:^{WO,*12345;`Name,*Sick Nancheth;`Engine,*LS3;`CrankMfg,*OE;`Date,*11/3/2020 12:00:00 AM;`ImbaRad,*3.25;`ImbaAng,*0;`ImbaMass,*0}^`||`Measurements#:^{1,*123;`2,*234;`3,*345;`4,*456}^";
             //outputTB1.Text = SaveDataSerialize(savedInfo, dt);
             //StringToJobInfo(str); //Not storing anything past Crank MFG
             //StringToMeasTable(str); //WORKS!!!!
+
             string str = "WO123#:45 ";
-            string checkOut = JICheck(str);
-            outputTB1.AppendText(Environment.NewLine); 
-            outputTB1.AppendText($@"JobInfo: ""{str}""; JICheck = {checkOut}");
-            
+            outputTB1.AppendText(Environment.NewLine + $@"JobInfo: ""{str}""; JICheck :" + Environment.NewLine + JICheck(str));
+
         }
 
-        private void CWRadButton_Click(object sender, EventArgs e)
+        void CWRadButton_Click(object sender, EventArgs e)
         {
             CWRadButtonText(sender);
         }
 
-        private void journalDiaTB_Leave(object sender, EventArgs e)
+        void journalDiaTB_Leave(object sender, EventArgs e)
         {
             tbleaveCheck(sender);
             cwRadCalc();
         }
 
-        private void cwrTB_Leave(object sender, EventArgs e)
+        void cwrTB_Leave(object sender, EventArgs e)
         {
             tbleaveCheck(sender);
             cwRadCalc();
         }
 
-        private void jtcwTB_Leave(object sender, EventArgs e)
+        void jtcwTB_Leave(object sender, EventArgs e)
         {
             tbleaveCheck(sender);
             cwRadCalc();
         }
 
-        private void cwRadCalc()
+        void measTypeButton_Click(object sender, EventArgs e)
         {
-            cwrCalcTB.Clear();
-            const string str1 = "CW Radius";
-            const string str2 = "Journal to CW";
-
-            switch (CWRadButton.Text)
-            {
-                case str1:
-                    if (PosDecCheck(cwrTB.Text)) cwrCalcTB.Text = cwrTB.Text.Trim();
-                    break;
-                case str2:
-                    if (journalDiaTB.Text.Trim().Length > 0 && jtcwTB.Text.Trim().Length > 0)
-                    {
-                        decimal d1 = Decimal.Parse(journalDiaTB.Text.Trim()) / 2;
-                        decimal d2 = Decimal.Parse(jtcwTB.Text.Trim());
-                        cwrCalcTB.Text = (d1 + d2).ToString();
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-
-            outputTB1.Text = cwrCalcTB.Text;
-        }
-
-        private string JICheck(string input) //add sender //does not work
-        {
-            input = input.Trim();//trims input string of whitespace
-            Console.WriteLine ($@"input: ""{input}""{Environment.NewLine}"); //console debug output
-
-            Type delimsType = typeof(Delims);
-            PropertyInfo[] properties = delimsType.GetProperties(BindingFlags.Public | BindingFlags.Static);
-
-            foreach (var property in properties)
-            {
-                //if (property.PropertyType == typeof(string))
-                //{
-                string propertyName = property.Name;
-                string propertyValue = (string)property.GetValue(null);
-                textBox1.AppendText($"{propertyName}: {propertyValue}");
-                textBox1.AppendText(Environment.NewLine);
-                //}
-            }
-
-
-            //var properties = typeof(Delims).GetProperties(); //Reflect all properties from Delims class
-
-
-
-            //string[] delimArray = new string[properties.Length]; //create array to store string values
-
-            //Console.WriteLine("Delims:"); //Console debug output of delims stored in string
-            //for (int i = 0; i < properties.Length; i++) //for loop through properties
-            //{
-            //    //if (properties[i].PropertyType == typeof(string)) //if property is string
-            //    //{
-            //        delimArray[i] = (string)properties[i].GetValue(null); //stores string value in array
-            //        Console.WriteLine($"delimArray[i]: {delimArray[i]}"); //Debug console output of delims
-
-            //        string[] delim = { $"{delimArray[i]}" };
-            //        string splitStr = input.Split(delim, StringSplitOptions.None)[0];
-            //        Console.WriteLine($"splitStr = {splitStr}");
-            //        if (input != splitStr)
-            //        {
-            //            Console.WriteLine("input != splitStr");
-            //            StringBuilder sb = new StringBuilder();
-            //            sb.Append($@"Input: ""{input}"" contains delim string ""{delimArray[i]}""");
-            //            return sb.ToString();
-            //        }
-            //    //}
-            //}
-            return "End of function.";
+            MeasTypeChange(sender);
         }
     }
 }

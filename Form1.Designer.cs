@@ -49,7 +49,6 @@ namespace CWLatheTurn
             this.LoadButton = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.remButton3 = new System.Windows.Forms.Button();
             this.modButton2 = new System.Windows.Forms.Button();
@@ -65,6 +64,8 @@ namespace CWLatheTurn
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jobInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.measTypeButton = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -72,6 +73,7 @@ namespace CWLatheTurn
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.panel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -106,12 +108,11 @@ namespace CWLatheTurn
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.panel3);
             this.tabPage1.Controls.Add(this.panel2);
             this.tabPage1.Controls.Add(this.outputTB1);
             this.tabPage1.Controls.Add(this.LoadButton);
             this.tabPage1.Controls.Add(this.SaveButton);
-            this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.comboBox1);
             this.tabPage1.Controls.Add(this.panel1);
             this.tabPage1.Controls.Add(this.dataGridView1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
@@ -255,26 +256,11 @@ namespace CWLatheTurn
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(198, 178);
+            this.label3.Location = new System.Drawing.Point(7, 3);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(98, 13);
+            this.label3.Size = new System.Drawing.Size(101, 13);
             this.label3.TabIndex = 5;
-            this.label3.Text = "Measurement Type";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Radius",
-            "Indicator Reading"});
-            this.comboBox1.Location = new System.Drawing.Point(198, 194);
-            this.comboBox1.MaxDropDownItems = 2;
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(103, 21);
-            this.comboBox1.TabIndex = 4;
-            this.comboBox1.Text = "Radius";
-            this.comboBox1.SelectionChangeCommitted += new System.EventHandler(this.MeasTypeChange);
+            this.label3.Text = "Measurement Type:";
             // 
             // panel1
             // 
@@ -426,6 +412,25 @@ namespace CWLatheTurn
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.measTypeButton);
+            this.panel3.Controls.Add(this.label3);
+            this.panel3.Location = new System.Drawing.Point(198, 177);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(116, 62);
+            this.panel3.TabIndex = 14;
+            // 
+            // measTypeButton
+            // 
+            this.measTypeButton.Location = new System.Drawing.Point(19, 19);
+            this.measTypeButton.Name = "measTypeButton";
+            this.measTypeButton.Size = new System.Drawing.Size(75, 38);
+            this.measTypeButton.TabIndex = 6;
+            this.measTypeButton.Text = "Indicator Reading";
+            this.measTypeButton.UseVisualStyleBackColor = true;
+            this.measTypeButton.Click += new System.EventHandler(this.measTypeButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -449,6 +454,8 @@ namespace CWLatheTurn
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -476,7 +483,6 @@ namespace CWLatheTurn
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button LoadButton;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.TextBox outputTB1;
@@ -490,6 +496,8 @@ namespace CWLatheTurn
         private System.Windows.Forms.TextBox cwrTB;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox cwrCalcTB;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Button measTypeButton;
     }
 
     
