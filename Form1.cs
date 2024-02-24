@@ -75,22 +75,22 @@ namespace CWLatheTurn
         string SaveDataSerialize(JobInfo jobInfo, DataTable dataTable) //serializes Job Info and Datatable and returns string
         {
             StringBuilder outString = new StringBuilder();
-            return outString.Append($"{JobInfoToString(jobInfo)}{Delims.infoData}{MeasTableToString(dataTable)}").ToString();
+            return outString.Append(JobInfoToString(jobInfo) + Delims.infoData + MeasTableToString(dataTable)).ToString();
         }
 
         string JobInfoToString(JobInfo info) //Serializes Job Info data and returns string
         {
             PropertyInfo[] props = typeof(JobInfo).GetProperties();
             StringBuilder sb = new StringBuilder();
-            sb.Append($"JobInfo{Delims.type}{Delims.start}");
+            sb.Append($"JobInfo" + Delims.type + Delims.start);
             try
             {
                 string str = String.Empty;
                 int iter = 1;
                 foreach (PropertyInfo prop in props)
                 {
-                    sb.Append($"{prop.Name}{Delims.propVal}{prop.GetValue(info)}");
-                    if (iter < props.Count()) sb.Append($"{Delims.measInfo}");
+                    sb.Append(prop.Name + Delims.propVal + prop.GetValue(info));
+                    if (iter < props.Count()) sb.Append(Delims.measInfo);
                     iter++;
                 }
             }
@@ -98,27 +98,24 @@ namespace CWLatheTurn
             {
                 sb.Append("Datatable is NULL");
             }
-            sb.Append($"{Delims.end}");
+            sb.Append(Delims.end);
             return sb.ToString();
         }
 
         string MeasTableToString(DataTable dt) //Serializes measurement datatable info and returns string 
         {
-
-
-            StringBuilder sb = new StringBuilder($"Measurements{Delims.type}{Delims.start}");
-
+            StringBuilder sb = new StringBuilder($"Measurements" + Delims.type + Delims.start);
             if (dt != null)
             {
                 int iter = 1;
                 foreach (DataRow row in dt.Rows)
                 {
-                    sb.Append($"{row[1]}{Delims.propVal}{row[2]}");
-                    if (iter < dt.Rows.Count) sb.Append($"{Delims.measInfo}");
+                    sb.Append(row[1] + Delims.propVal + row[2]);
+                    if (iter < dt.Rows.Count) sb.Append(Delims.measInfo);
                     iter++;
                 }
             }
-            sb.Append($"{Delims.end}");
+            sb.Append(Delims.end);
             return sb.ToString();
         }
 
@@ -143,7 +140,7 @@ namespace CWLatheTurn
 
             foreach (string subStr2 in subStr1)
             {
-                outputTB1.Text += $"subStr2: {subStr2}{Environment.NewLine}";
+                Console.WriteLine ($"subStr2: " + subStr2 + Environment.NewLine);
             }
 
             foreach (string subStr2 in subStr1)
@@ -171,63 +168,46 @@ namespace CWLatheTurn
                 .Split(dMI, StringSplitOptions.None);
 
             JobInfo testInfo = new JobInfo();
-
-            //int i = 1;
             StringBuilder sb = new StringBuilder();
-            sb.Append(Environment.NewLine);
-            outputTB1.Text = $"subStr1.count = {subStr1.Length}";
 
             foreach (string subStr2 in subStr1)
             {
                 string propName = subStr2.Split(dPV, StringSplitOptions.None)[0].Trim();
                 string propValue = subStr2.Split(dPV, StringSplitOptions.None)[1].Trim();
-
+                bool propCheck = true;
                 PropertyInfo propertyInfo = typeof(JobInfo).GetProperty(propName);
 
                 if (TryGetPropertyType<JobInfo>(propName, out Type propType))
                 {
-                    switch (propType.Name)
+                    switch (propType.Name) //switch based on property type returned by TryGetPropertyType
                     {
                         case "String":
                             propertyInfo.SetValue(testInfo, propValue);
-                            sb.Append(propStoredString(propValue, propName, propType));
                             break;
                         case "Decimal":
-                            decimal decOut;
-                            if (decimal.TryParse(propValue, out decOut))
-                            {
-                                propertyInfo.SetValue(testInfo, decOut);
-                            }
-                            sb.Append(propStoredString(propValue, propName, propType));
+                            if (decimal.TryParse(propValue, out decimal decOut)) propertyInfo.SetValue(testInfo, decOut);
                             break;
                         case "DateTime":
-                            DateTime dtOut;
-                            if (DateTime.TryParse(propValue, out dtOut))
-                            {
-                                propertyInfo.SetValue(testInfo, dtOut);
-                            }
-                            sb.Append(propStoredString(propValue, propName, propType));
+                            if (DateTime.TryParse(propValue, out DateTime dtOut)) propertyInfo.SetValue(testInfo, dtOut);
                             break;
                         case "Int":
-                            int intOut;
-                            if (int.TryParse(propValue, out intOut))
-                            {
-                                propertyInfo.SetValue(testInfo, intOut);
-                            }
-                            sb.Append(propStoredString(propValue, propName, propType));
+                            if (int.TryParse(propValue, out int intOut)) propertyInfo.SetValue(testInfo, intOut);
                             break;
-                        // Add more cases for other types as needed
                         default:
-                            Console.WriteLine($"Property '{propName}' is of unknown type: {propType.Name}");
+                            Console.WriteLine($"Property '{propName}' is of incompatible type: {propType.Name}");
+                            propCheck = false;
                             break;
                     }
+                    sb.Append(Environment.NewLine);
+                    if (propCheck) sb.Append(propStoredString(propValue, propName, propType)); //debug: appends to stringbuilder for console output
                 }
                 else
                 {
                     Console.WriteLine($"Property '{propName}' not found.");
                 }
             }
-            outputTB1.AppendText($"{sb}{Environment.NewLine}{JobInfoToString(testInfo)}");
+            Console.WriteLine(sb + Environment.NewLine + JobInfoToString(testInfo)); //debug: outputs reserialized data to console after deserialization
+            
         }
 
         string propStoredString(string pV, string pN, Type pT)
@@ -349,7 +329,7 @@ namespace CWLatheTurn
             dt.Columns.Add("#", typeof(int));
             dt.Columns.Add("Angle", typeof(decimal));
             dt.Columns.Add("Value", typeof(decimal));
-            dt.Columns.Add("Reading", typeof(decimal));
+            //dt.Columns.Add("Indicator", typeof(decimal));
 
             DGV1reload();
 
@@ -359,7 +339,7 @@ namespace CWLatheTurn
             dataGridView1.Columns[0].Width = cWidth - cMarg;
             dataGridView1.Columns[1].Width = (dataGridView1.Width - cWidth) / 2;
             dataGridView1.Columns[2].Width = (dataGridView1.Width - cWidth) / 2;
-            dataGridView1.Columns[2].Width = (dataGridView1.Width - cWidth) / 2;
+            dataGridView1.Columns[2].HeaderText = "Indicator";
         }
 
         void AddMeas()//adds Measurement row
@@ -438,31 +418,29 @@ namespace CWLatheTurn
 
             switch (button.Text)
             {
-                case str1:
+                case str1: //meas type is currently Indicator --> change to radius
                     {
-                        button.Text = str2;
-                        dt.Columns[2].ColumnName = str2;
+                        dt.Columns[2].ColumnName = str2; //changes column header to Radius
+                        panel2.Enabled = false; //disables indicator zero panel
+
+                        button.Text = str2; //changes button text to Radius
                         break;
                     }
                 case str2:
                     {
-                        button.Text = str1;
-                        dt.Columns[2].ColumnName = str1;
+                        dt.Columns[2].ColumnName = str1.Split(' ')[0]; //changes column header to Indicator
+                        panel2.Enabled = true; //enables indicator zero panel
+
+                        button.Text = str1; //changes button text to Indicator Reading
                         break;
                     }
             }
-
-            foreach (DataRow dc in dt.Columns)
-            {
-                //if meastype = radius
-                //if meastype = reading
-            }
         }
 
-        void MeasListSort() //resort and update list in DataGridView (UNFINISHED)
-        {
+        //void MeasListSort() //resort and update list in DataGridView (UNFINISHED)
+        //{
 
-        }
+        //}
 
         void DGV1settings() //settings for datagridview1
         {
@@ -472,7 +450,7 @@ namespace CWLatheTurn
             }
         }
 
-        void DGV1reload() //reloads DGV1
+        void DGV1reload() //reloads DGV1 //currently implements displayt = dt
         {
             displayt.Clear();
             displayt = dt;
@@ -515,7 +493,7 @@ namespace CWLatheTurn
 
 
             outputTB1.Text = cwrCalcTB.Text;
-        }
+        } //calculates indicator zero radius based on toggle button status
 
         string JICheck(string input) //add sender //does not work
         {
@@ -543,9 +521,9 @@ namespace CWLatheTurn
             return null;
         }
 
-        void CWRadButtonText(object sender)
+        void CWRadButtonText(object sender) //changes UI based on indicator zero button toggle
         {
-            const string str1 = "CW Radius";
+            const string str1 = "Radius";
             const string str2 = "Journal to CW";
 
             System.Windows.Forms.Button button = (System.Windows.Forms.Button)sender;
@@ -606,7 +584,7 @@ namespace CWLatheTurn
             {
                 valValid = false;
             }
-            if ("" != angTxt //value is not null
+            if (("" != angTxt && angTxt != null) //value is not null
                 && !StrIsDecimal(angTxt) //value is not decimal
                 && (360 <= decimal.Parse(angTxt) //value >= 360
                     || false))
@@ -644,27 +622,33 @@ namespace CWLatheTurn
             string angError = "Invalid angle input.";
             string valError = $"Invalid {measTypeButton.Text} input.";
             string noInput = $"Missing angle and {measTypeButton.Text} input.";
-            string angExists = "[Angle already exists]";
-            string str = "Invalid Input.";
+            string angExists = "(Angle already exists)";
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Environment.NewLine + "Invalid Input.");
             switch (c)
             {
                 case 'a':
-                    str = angError;
+                    sb.Clear();
+                    sb.Append(angError);
                     break;
                 case 'v':
-                    str = valError;
+                    sb.Clear();
+                    sb.Append(valError);
                     break;
                 case 'b':
-                    str = angError + valError;
+                    sb.Clear();
+                    sb.Append(angError + " " + valError);
                     break;
                 case 'e':
-                    str = noInput;
+                    sb.Clear();
+                    sb.Append(noInput);
                     break;
                 case 'x':
-                    str = $"{angError} {angExists}";
+                    sb.Clear();
+                    sb.Append(angError + " " + angExists);
                     break;
             }
-            toolStripStatusLabel1.Text = str;
+            toolStripStatusLabel1.Text = sb.ToString();
         }
 
         bool StrIsPositive(string str) //returns true if input is !null and a positive decimal
@@ -687,7 +671,7 @@ namespace CWLatheTurn
         bool tbleaveCheck(object sender) //validates textbox input is a positive decimal or refocuses textbox and changes background to yellow
         {
             System.Windows.Forms.TextBox tb = (System.Windows.Forms.TextBox)sender;
-            string str = tb.Text;
+            string str = tb.Text.Trim();
             if (!StrIsDecimal(str) || !StrIsPositive(str))
             {
                 if (str != "")
